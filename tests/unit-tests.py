@@ -1,52 +1,37 @@
 from retinaface import RetinaFace
 import matplotlib.pyplot as plt
 import cv2
+import os
 
-img_path = "dataset/img3.jpg"
-img = cv2.imread(img_path)
+path = "./dataset"
 
-resp = RetinaFace.detect_faces(img_path, threshold = 0.1)
-#print(resp)
+flist = os.listdir(path)
+for index1 in range(0, len(flist)):
 
-def int_tuple(t):
-    return tuple(int(x) for x in t)
+    img_path = path + os.sep + flist[index1]
+    base_name = os.path.basename(img_path)
 
-for key in resp:
-    identity = resp[key]
+    img = cv2.imread(img_path)
 
-    #---------------------
-    confidence = identity["score"]
+    resp = RetinaFace.detect_faces(img_path, threshold=0.1)
 
-    rectangle_color = (255, 255, 255)
+    for key in resp:
+        # print(img_path, key)
+        identity = resp[key]
+        print(identity)
 
-    landmarks = identity["landmarks"]
-    diameter = 1
-    cv2.circle(img, int_tuple(landmarks["left_eye"]), diameter, (0, 0, 255), -1)
-    cv2.circle(img, int_tuple(landmarks["right_eye"]), diameter, (0, 0, 255), -1)
-    cv2.circle(img, int_tuple(landmarks["nose"]), diameter, (0, 0, 255), -1)
-    cv2.circle(img, int_tuple(landmarks["mouth_left"]), diameter, (0, 0, 255), -1)
-    cv2.circle(img, int_tuple(landmarks["mouth_right"]), diameter, (0, 0, 255), -1)
+        confidence = identity["score"]
+        rectangle_color = (255, 0, 0)
+        score = identity["score"]
+        if score > 0.6:
+            # left,top,right,bottom
 
-    facial_area = identity["facial_area"]
+            facial_area = identity["facial_area"]
+            print(img_path, facial_area)
 
-    cv2.rectangle(img, (facial_area[2], facial_area[3]), (facial_area[0], facial_area[1]), rectangle_color, 1)
-    #facial_img = img[facial_area[1]: facial_area[3], facial_area[0]: facial_area[2]]
-    #plt.imshow(facial_img[:, :, ::-1])
+            cv2.rectangle(img, (facial_area[2], facial_area[3]), (facial_area[0], facial_area[1]), rectangle_color, 10)
 
-plt.imshow(img[:, :, ::-1])
-plt.axis('off')
-plt.show()
-cv2.imwrite('outputs/'+img_path.split("/")[1], img)
-
-#------------------------------
-#alignment
-
-img_path = "dataset/img11.jpg"
-
-resp = RetinaFace.extract_faces(img_path = img_path, align = True)
-
-for img in resp:
-    plt.imshow(img)
+    plt.imshow(img[:, :, ::-1])
     plt.axis('off')
     plt.show()
-    cv2.imwrite('outputs/'+img_path.split("/")[1], img[:, :, ::-1])
+    cv2.imwrite('./outputs' + os.sep + base_name, img)
